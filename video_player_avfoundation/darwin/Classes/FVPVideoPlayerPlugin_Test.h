@@ -9,10 +9,12 @@
 #import "FVPDisplayLink.h"
 #import "messages.g.h"
 
+@class SUPlayer;
+
 // Protocol for AVFoundation object instance factory. Used for injecting framework objects in tests.
 @protocol FVPAVFactory
 @required
-- (AVPlayer *)playerWithPlayerItem:(AVPlayerItem *)playerItem;
+- (SUPlayer *)playerWithPlayerItem:(AVPlayerItem *)playerItem; //AVPlayer
 - (AVPlayerItemVideoOutput *)videoOutputWithPixelBufferAttributes:
     (NSDictionary<NSString *, id> *)attributes;
 @end
@@ -23,11 +25,14 @@
                                     callback:(void (^)(void))callback;
 @end
 
+
+
+
 #pragma mark -
 
 // TODO(stuartmorgan): Move this whole class to its own files.
 @interface FVPVideoPlayer : NSObject <FlutterStreamHandler, FlutterTexture>
-@property(readonly, nonatomic) AVPlayer *player;
+@property(readonly, nonatomic) SUPlayer *player;
 // This is to fix 2 bugs: 1. blank video for encrypted video streams on iOS 16
 // (https://github.com/flutter/flutter/issues/111457) and 2. swapped width and height for some video
 // streams (not just iOS 16).  (https://github.com/flutter/flutter/issues/109116).

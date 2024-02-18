@@ -62,7 +62,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
 @interface VideoPlayerTests : XCTestCase
 @end
 
-@interface StubAVPlayer : AVPlayer
+@interface StubAVPlayer : SUPlayer
 @property(readonly, nonatomic) NSNumber *beforeTolerance;
 @property(readonly, nonatomic) NSNumber *afterTolerance;
 @property(readonly, assign) CMTime lastSeekTime;
@@ -77,7 +77,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
   _beforeTolerance = [NSNumber numberWithLong:toleranceBefore.value];
   _afterTolerance = [NSNumber numberWithLong:toleranceAfter.value];
   _lastSeekTime = time;
-  [super seekToTime:time
+  [super.player seekToTime:time
         toleranceBefore:toleranceBefore
          toleranceAfter:toleranceAfter
       completionHandler:completionHandler];
@@ -107,8 +107,8 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
   return self;
 }
 
-- (AVPlayer *)playerWithPlayerItem:(AVPlayerItem *)playerItem {
-  return _stubAVPlayer ?: [AVPlayer playerWithPlayerItem:playerItem];
+- (SUPlayer *)playerWithPlayerItem:(AVPlayerItem *)playerItem {
+  return _stubAVPlayer ?: [[SUPlayer alloc] initWithItem:playerItem];
 }
 
 - (AVPlayerItemVideoOutput *)videoOutputWithPixelBufferAttributes:
@@ -432,7 +432,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
   XCTAssertNotNil(textureMessage);
   FVPVideoPlayer *player = videoPlayerPlugin.playersByTextureId[@(textureMessage.textureId)];
   XCTAssertNotNil(player);
-  AVPlayer *avPlayer = player.player;
+  AVPlayer *avPlayer = player.player.player;
 
   [videoPlayerPlugin dispose:textureMessage error:&error];
   XCTAssertEqual(videoPlayerPlugin.playersByTextureId.count, 0);
@@ -463,7 +463,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
   XCTAssertNotNil(textureMessage);
   FVPVideoPlayer *player = videoPlayerPlugin.playersByTextureId[@(textureMessage.textureId)];
   XCTAssertNotNil(player);
-  AVPlayer *avPlayer = player.player;
+  AVPlayer *avPlayer = player.player.player;
   [avPlayer play];
 
   [player onListenWithArguments:nil
@@ -653,7 +653,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
   [self waitForExpectationsWithTimeout:30.0 handler:nil];
 
   // Starts paused.
-  AVPlayer *avPlayer = player.player;
+  AVPlayer *avPlayer = player.player.player;
   XCTAssertEqual(avPlayer.rate, 0);
   XCTAssertEqual(avPlayer.volume, 1);
   XCTAssertEqual(avPlayer.timeControlStatus, AVPlayerTimeControlStatusPaused);
@@ -709,7 +709,7 @@ NSObject<FlutterPluginRegistry> *GetPluginRegistry(void) {
     FVPVideoPlayer *player = videoPlayerPlugin.playersByTextureId[@(textureMessage.textureId)];
     XCTAssertNotNil(player);
     weakPlayer = player;
-    avPlayer = player.player;
+    avPlayer = player.player.player;
 
     [videoPlayerPlugin dispose:textureMessage error:&error];
     XCTAssertNil(error);

@@ -1,1 +1,8 @@
 lib/generated_plugin_registrant.dart
+.dart_tool/
+/**/Flutter/Flutter.podspec
+/**/Flutter/**/GeneratedPluginRegistrant.*
+/**/Flutter/flutter_export_environment.sh
+/**/Flutter/Generated.xcconfig
+/**/Runner/GeneratedPluginRegistrant.*
+/**/Runner.xcworkspace/xcuserdata/

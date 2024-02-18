@@ -430,17 +430,21 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       await _videoPlayerPlatform
           .setMixWithOthers(videoPlayerOptions!.mixWithOthers);
     }
-
+    print("_videoPlayerPlatform.create::${dataSourceDescription}");
     _textureId = (await _videoPlayerPlatform.create(dataSourceDescription)) ??
         kUninitializedTextureId;
-    _creatingCompleter!.complete(null);
+
+    print("_creatingCompleter!.isCompleted::${_creatingCompleter!.isCompleted}");
+    // if(!_creatingCompleter!.isCompleted) {
+      _creatingCompleter!.complete(null);
+    // }
     final Completer<void> initializingCompleter = Completer<void>();
 
     void eventListener(VideoEvent event) {
       if (_isDisposed) {
         return;
       }
-
+      print("_creatingCompleter!.eventListener:  event:${event.eventType.name}");
       switch (event.eventType) {
         case VideoEventType.initialized:
           value = value.copyWith(
@@ -485,9 +489,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     void errorListener(Object obj) {
+      print("_creatingCompleter!.errorListener:${obj}");
       final PlatformException e = obj as PlatformException;
       value = VideoPlayerValue.erroneous(e.message!);
       _timer?.cancel();
+      print("_creatingCompleter!.isCompleted:errorListener:${initializingCompleter.isCompleted}");
       if (!initializingCompleter.isCompleted) {
         initializingCompleter.completeError(obj);
       }
@@ -496,6 +502,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _eventSubscription = _videoPlayerPlatform
         .videoEventsFor(_textureId)
         .listen(eventListener, onError: errorListener);
+    print("_videoPlayerPlatform.create::妈的");
     return initializingCompleter.future;
   }
 

@@ -8,6 +8,11 @@ import android.content.Context;
 import android.os.Build;
 import android.util.LongSparseArray;
 import androidx.annotation.NonNull;
+
+import com.google.android.exoplayer2.database.StandaloneDatabaseProvider;
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
+import com.google.android.exoplayer2.upstream.cache.SimpleCache;
+
 import io.flutter.FlutterInjector;
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -22,6 +27,8 @@ import io.flutter.plugins.videoplayer.Messages.PositionMessage;
 import io.flutter.plugins.videoplayer.Messages.TextureMessage;
 import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
 import io.flutter.view.TextureRegistry;
+
+import java.io.File;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -34,6 +41,9 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
   private final LongSparseArray<VideoPlayer> videoPlayers = new LongSparseArray<>();
   private FlutterState flutterState;
   private final VideoPlayerOptions options = new VideoPlayerOptions();
+  private StandaloneDatabaseProvider exoDatabaseProvider;
+  private SimpleCache simpleCache;
+
 
   /** Register this with the v2 embedding for the plugin to respond to lifecycle callbacks. */
   public VideoPlayerPlugin() {}
@@ -76,7 +86,13 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
             e);
       }
     }
-
+    exoDatabaseProvider= new StandaloneDatabaseProvider(binding.getApplicationContext());
+    // 1. 创建一个 SimpleCache 对象，指定缓存目录和缓存大小
+    simpleCache = new SimpleCache(new File(binding.getApplicationContext().getCacheDir(),
+            "exoplayer_cache"),
+            new LeastRecentlyUsedCacheEvictor(50 * 1024 * 1024),
+            exoDatabaseProvider
+    );
     final FlutterInjector injector = FlutterInjector.instance();
     this.flutterState =
         new FlutterState(
@@ -95,6 +111,14 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
     }
     flutterState.stopListening(binding.getBinaryMessenger());
     flutterState = null;
+    if(exoDatabaseProvider!=null){
+      exoDatabaseProvider.close();
+    }
+    if(simpleCache!=null){
+      simpleCache.release();
+    }
+    exoDatabaseProvider = null;
+    simpleCache = null;
     initialize();
   }
 
@@ -125,38 +149,42 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
         new EventChannel(
             flutterState.binaryMessenger, "flutter.io/videoPlayer/videoEvents" + handle.id());
 
+    if(simpleCache==null){
+      throw new RuntimeException("simpleCache is null");
+    }
     VideoPlayer player;
     if (arg.getAsset() != null) {
       String assetLookupKey;
       if (arg.getPackageName() != null) {
         assetLookupKey =
-            flutterState.keyForAssetAndPackageName.get(arg.getAsset(), arg.getPackageName());
+                flutterState.keyForAssetAndPackageName.get(arg.getAsset(), arg.getPackageName());
       } else {
         assetLookupKey = flutterState.keyForAsset.get(arg.getAsset());
       }
       player =
-          new VideoPlayer(
-              flutterState.applicationContext,
-              eventChannel,
-              handle,
-              "asset:///" + assetLookupKey,
-              null,
-              new HashMap<>(),
-              options);
+              new VideoPlayer(
+                      flutterState.applicationContext,
+                      simpleCache,
+                      eventChannel,
+                      handle,
+                      "asset:///" + assetLookupKey,
+                      null,
+                      new HashMap<>(),
+                      options);
     } else {
       Map<String, String> httpHeaders = arg.getHttpHeaders();
       player =
-          new VideoPlayer(
-              flutterState.applicationContext,
-              eventChannel,
-              handle,
-              arg.getUri(),
-              arg.getFormatHint(),
-              httpHeaders,
-              options);
+              new VideoPlayer(
+                      flutterState.applicationContext,
+                      simpleCache,
+                      eventChannel,
+                      handle,
+                      arg.getUri(),
+                      arg.getFormatHint(),
+                      httpHeaders,
+                      options);
     }
     videoPlayers.put(handle.id(), player);
-
     return new TextureMessage.Builder().setTextureId(handle.id()).build();
   }
 

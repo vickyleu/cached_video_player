@@ -6,10 +6,4 @@
 *.iml
 out
 gen
-**/.dart_tool/
-**/.flutter-plugins*
-**/build/
-**/Pods/
-**/.gradle/
-**/.symlinks/
-**/*.lock
+.dart_tool/

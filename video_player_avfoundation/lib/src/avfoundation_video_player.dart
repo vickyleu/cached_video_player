@@ -59,6 +59,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
     );
 
     final TextureMessage response = await _api.create(message);
+    print("response.textureId::::${response.textureId}");
     return response.textureId;
   }
 
@@ -118,6 +119,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
     return _eventChannelFor(textureId)
         .receiveBroadcastStream()
         .map((dynamic event) {
+          print("mother fucker ${event}");
       final Map<dynamic, dynamic> map = event as Map<dynamic, dynamic>;
       switch (map['event']) {
         case 'initialized':

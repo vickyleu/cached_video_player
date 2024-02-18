@@ -101,25 +101,9 @@
             //有缓存播放缓存文件
             NSString * cacheFilePath = [SUFileHandle cacheFileExistsWithURL:[urlAsset.URL originalSchemeURL]];
             if (cacheFilePath) {
-                
-                [self videoDownloaded:[urlAsset.URL originalSchemeURL] withLocalFile:cacheFilePath completionHandler:^(BOOL isDownloaded) {
-                            if (isDownloaded) {
-                                AVURLAsset *movieAsset = [AVURLAsset URLAssetWithURL:[NSURL fileURLWithPath:cacheFilePath] options:nil];
-                                self.currentItem = [AVPlayerItem playerItemWithAsset:movieAsset];
-                                NSLog(@"有缓存，播放缓存文件 item %@  Asset:%@",cacheFilePath,movieAsset);
-                            } else {
-                                [urlAsset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
-                                self.currentItem = [AVPlayerItem playerItemWithAsset:urlAsset];
-                                NSLog(@"无缓存，播放网络文件 url ");
-                            }
-                            // Player
-                            if (self.myplayer) {
-                                [self.myplayer replaceCurrentItemWithPlayerItem:self.currentItem];
-                            } else {
-                                self.myplayer = [AVPlayer playerWithPlayerItem:self.currentItem];
-                            }
-                }];
-                return;
+                AVURLAsset *movieAsset = [AVURLAsset URLAssetWithURL:[NSURL fileURLWithPath:cacheFilePath] options:nil];
+                self.currentItem = [AVPlayerItem playerItemWithAsset:movieAsset];
+                NSLog(@"有缓存，播放缓存文件 item %@  Asset:%@",cacheFilePath,movieAsset);
             }else {
                 [urlAsset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
                 self.currentItem = self.item;
@@ -141,25 +125,10 @@
             NSString * cacheFilePath = [SUFileHandle cacheFileExistsWithURL:self.url];
             AVURLAsset * asset = [AVURLAsset URLAssetWithURL:[self.url specialSchemeURL] options:nil];
             if (cacheFilePath) {
-                [self videoDownloaded:self.url withLocalFile:cacheFilePath completionHandler:^(BOOL isDownloaded) {
-                    if(isDownloaded){
-                        NSURL * url = [NSURL fileURLWithPath:cacheFilePath];
-                        AVPlayerItem* itemTemp=[AVPlayerItem playerItemWithURL:url];
-                        self.currentItem =itemTemp;
-                        NSLog(@"有缓存，播放缓存文件 item %@  Asset:%@",cacheFilePath,asset);
-                    }else{
-                        [asset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
-                        self.currentItem = [AVPlayerItem playerItemWithAsset:asset];
-                        NSLog(@"无缓存，播放网络文件 url ");
-                    }
-                    // Player
-                    if (self.myplayer) {
-                        [self.myplayer replaceCurrentItemWithPlayerItem:self.currentItem];
-                    } else {
-                        self.myplayer = [AVPlayer playerWithPlayerItem:self.currentItem];
-                    }
-                }];
-                return;
+                NSURL * url = [NSURL fileURLWithPath:cacheFilePath];
+                AVPlayerItem* itemTemp=[AVPlayerItem playerItemWithURL:url];
+                self.currentItem =itemTemp;
+                NSLog(@"有缓存，播放缓存文件 item %@  Asset:%@",cacheFilePath,asset);
             }else {
                 [asset.resourceLoader setDelegate:self.resourceLoader queue:dispatch_get_main_queue()];
                 self.currentItem = [AVPlayerItem playerItemWithAsset:asset];

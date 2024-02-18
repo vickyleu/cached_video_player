@@ -30,6 +30,7 @@
  *  保存临时文件到缓存文件夹
  */
 + (void)cacheTempFileWithFileName:(NSString *)name;
++ (void)moveTempFileWithFileName:(NSString *)name;
 
 /**
  *  是否存在缓存文件 存在：返回文件路径 不存在：返回nil

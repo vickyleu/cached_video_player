@@ -49,8 +49,19 @@
     NSLog(@"cache file : %@", success ? @"success" : @"fail");
 }
 
++ (void)moveTempFileWithFileName:(NSString *)name {
+    NSFileManager * manager = [NSFileManager defaultManager];
+    NSString * cacheFolderPath = [NSString cacheFolderPath];
+    if (![manager fileExistsAtPath:cacheFolderPath]) {
+        [manager createDirectoryAtPath:cacheFolderPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    NSString * cacheFilePath = [NSString stringWithFormat:@"%@/downloaded_%@", cacheFolderPath, name];
+    BOOL success = [[NSFileManager defaultManager] copyItemAtPath:[NSString tempFilePath] toPath:cacheFilePath error:nil];
+    NSLog(@"moveTempFileWithFileName file : %@", success ? @"success" : @"fail");
+}
+
 + (NSString *)cacheFileExistsWithURL:(NSURL *)url {
-    NSString * cacheFilePath = [NSString stringWithFormat:@"%@/%@", [NSString cacheFolderPath], [NSString fileNameWithURL:url]];
+    NSString * cacheFilePath = [NSString stringWithFormat:@"%@/downloaded_%@", [NSString cacheFolderPath], [NSString fileNameWithURL:url]];
     NSFileManager*manager=[NSFileManager defaultManager];
     if ([manager fileExistsAtPath:cacheFilePath]) {
         NSError *error;

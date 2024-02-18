@@ -138,6 +138,12 @@
     NSUInteger reqEndOffset = loadingRequest.dataRequest.requestedOffset + loadingRequest.dataRequest.requestedLength;
     if (nowendOffset >= reqEndOffset) {
         [loadingRequest finishLoading];
+//   TODO     downloaded_
+        NSURL*originUrl = [loadingRequest.request.URL originalSchemeURL];
+        NSString* fileName = [NSString fileNameWithURL:originUrl];
+        NSLog(@"fileNamefileNamefileName:::%@",fileName);
+        [SUFileHandle moveTempFileWithFileName:fileName];
+        
         return YES;
     }
     return NO;
